@@ -2,7 +2,11 @@
 {% load static %}
 
 {% block content %}
+
 <div class="container">
+    <div style="margin-top: 20px; padding: 20px;">
+            <a href="{% url 'admin_dashboard' %}" class="btn"> << Back </a>
+        </div>
     <h1 style="border-bottom: 3px solid #8B5C2A; padding-bottom: 6px; display: inline-block; margin: 0 auto; text-align: center;">
     Customer Information
 </h1>
@@ -28,17 +32,17 @@
                     <td style="padding: 10px;">{{ customer_data.customer.user.username }}</td>
                     <td style="padding: 10px;">{{ customer_data.customer.user.email }}</td>
                     <td style="padding: 10px;">
-                        <span style="padding: 5px 10px; border-radius: 20px; background: #cce5ff; color: #004085;">
+                        <span style="padding: 5px 10px; border-radius: 20px;  color: #010101;">
                             {{ customer_data.order_count }}
                         </span>
                     </td>
                     <td style="padding: 10px;">
-                        <span style="padding: 5px 10px; border-radius: 20px; background: #f8d7da; color: #721c24;">
+                        <span style="padding: 5px 10px; border-radius: 20px;  color: #d41e30;">
                             {{ customer_data.wishlist_count }}
                         </span>
                     </td>
                     <td style="padding: 10px;">
-                        <span style="padding: 5px 10px; border-radius: 20px; background: #d4edda; color: #155724;">
+                        <span style="padding: 5px 10px; border-radius: 20px; color: #1eaf40;">
                             {{ customer_data.cart_count }}
                         </span>
                     </td>

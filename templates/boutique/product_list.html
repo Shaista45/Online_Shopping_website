@@ -111,10 +111,10 @@
                             <i class="fas fa-shopping-cart"></i>
                         {% endif %}
                     </button>
-
-                    <button class="quick-view-btn" data-product-id="{{ product.id }}" title="Quick view">
+                    
+                     <a href="{% url 'product_detail' product.id %}" class="quick-view-btn" data-product-id="{{ product.id }}" title="Quick view">
                         <i class="fas fa-eye"></i>
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>
@@ -147,37 +147,6 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- when Quick-View is clicked a popup apper to display product detail from product_detail.html-->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const quickViewButtons = document.querySelectorAll(".quick-view-btn");
-        quickViewButtons.forEach(button => {
-            button.addEventListener("click", function() {
-                const productId = this.getAttribute("data-product-id");
-                // Fetch product details via AJAX
-                fetch(`/product/${productId}/`)
-                    .then(response => response.text())
-                    .then(html => {
-                        // Insert the fetched HTML into the modal
-                        document.getElementById("product-modal-content").innerHTML = html;
-                        // Show the modal
-                        document.getElementById("product-modal-overlay").style.display = "flex";
-                    })
-                    .catch(error => {
-                        console.error("Error fetching product details:", error);
-                    });
-            });
-        });
-
-        // Close modal when clicking outside of the content
-        document.getElementById("product-modal-overlay").addEventListener("click", function(event) {
-            if (event.target === this) {
-                this.style.display = "none";
-            }
-        });
-    });
-</script>
-
 <!-- Product Quick-View Modal Overlay (for HTML-based quick view fallback) -->
 <div id="product-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center;">
     <div id="product-modal-content" style="background:white; border-radius:8px; max-width:700px; width:95vw; margin:auto; position:relative; padding:20px;"></div>

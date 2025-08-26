@@ -25,6 +25,7 @@ from datetime import datetime
 
 def is_admin(user):
     return user.is_staff
+ 
 
 def product_list(request):
     category_name = request.GET.get('category')
@@ -131,6 +132,28 @@ def add_to_wishlist(request, product_id):
             add_to_wishlist_mongo(request.user.id, str(product_id), product.name)
             return JsonResponse({'status': 'added', 'message': 'Product added to wishlist'})
     
+    except Product.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Product not found'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
+
+@login_required
+@require_POST
+def toggle_wishlist(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        wishlist_items = get_wishlist_mongo(request.user.id) or []
+
+        # Check if product is already in wishlist
+        product_in_wishlist = any(str(item.get('product_id')) == str(product_id) for item in wishlist_items)
+
+        if product_in_wishlist:
+            remove_from_wishlist_mongo(request.user.id, str(product_id))
+            return JsonResponse({'status': 'removed', 'message': 'Product removed from wishlist'})
+        else:
+            add_to_wishlist_mongo(request.user.id, str(product_id), product.name)
+            return JsonResponse({'status': 'added', 'message': 'Product added to wishlist'})
+
     except Product.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Product not found'})
     except Exception as e:
