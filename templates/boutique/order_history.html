@@ -1,0 +1,56 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title" style="border-bottom: 3px solid #8B5C2A; display: inline-block; padding-bottom: 6px;">
+        Order History
+    </h2>
+    {% if orders %}
+        <div class="order-history-list" style="margin-top: 30px;">
+            {% for order in orders %}
+                <div class="order-card" style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 24px; padding: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>Order #{{ order.id }}</strong><br>
+                            <span style="color: #888;">Placed on: {{ order.order_date|date:"M d, Y H:i" }}</span>
+                        </div>
+                        <div>
+                            <span style="font-weight: bold; color: #8B5C2A;">Rs {{ order.total_amount }}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <span>Status: 
+                            {% if order.status == 'Delivered' %}
+                                <span style="color: #27ae60; font-weight: bold;">{{ order.status }}</span>
+                            {% elif order.status == 'Cancelled' %}
+                                <span style="color: #e74c3c; font-weight: bold;">{{ order.status }}</span>
+                            {% elif order.status == 'Pending' %}
+                                <span style="color: #f39c12; font-weight: bold;">{{ order.status }}</span>
+                            {% else %}
+                                <span style="color: #8B5C2A; font-weight: bold;">{{ order.status }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div style="margin-top: 18px;">
+                        <strong>Items:</strong>
+                        <ul style="margin: 0; padding-left: 18px;">
+                            {% for item in order.items.all %}
+                                <li>
+                                    {{ item.product.name }} (x{{ item.quantity }}) - Rs {{ item.price }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <a href="{% url 'order_detail' order.id %}" class="btn" style="background: #8B5C2A; color: #fff; padding: 7px 18px; border-radius: 4px; text-decoration: none;">View Details</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="margin-top: 40px; color: #888; text-align: center;">
+            <p>You have not placed any orders yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

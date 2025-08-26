@@ -1,0 +1,54 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1 style="border-bottom: 3px solid #8B5C2A; padding-bottom: 6px; display: inline-block; margin: 0 auto; text-align: center;">
+    Customer Information
+</h1>
+
+    <!-- Customers Table -->
+    <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-top: 20px;">
+        {% if customers %}
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="border-bottom: 2px solid #eee;">
+                    <th style="padding: 10px; text-align: left;">#</th>
+                    <th style="padding: 10px; text-align: left;"> Name</th>
+                    <th style="padding: 10px; text-align: left;"> Email</th>
+                    <th style="padding: 10px; text-align: left;"> Orders</th>
+                    <th style="padding: 10px; text-align: left;"> Wishlist</th>
+                    <th style="padding: 10px; text-align: left;"> Cart</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer_data in customers %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px;">{{ forloop.counter }}</td>
+                    <td style="padding: 10px;">{{ customer_data.customer.user.username }}</td>
+                    <td style="padding: 10px;">{{ customer_data.customer.user.email }}</td>
+                    <td style="padding: 10px;">
+                        <span style="padding: 5px 10px; border-radius: 20px; background: #cce5ff; color: #004085;">
+                            {{ customer_data.order_count }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px;">
+                        <span style="padding: 5px 10px; border-radius: 20px; background: #f8d7da; color: #721c24;">
+                            {{ customer_data.wishlist_count }}
+                        </span>
+                    </td>
+                    <td style="padding: 10px;">
+                        <span style="padding: 5px 10px; border-radius: 20px; background: #d4edda; color: #155724;">
+                            {{ customer_data.cart_count }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #6c757d; margin: 40px 0;">No customers found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "boutique/base.html" %}
+
+{% block title %}Add Category | ElegantBoutique{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="page-title">➕ Add New Category</h2>
+
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-save"></i> Save Category
+            </button>
+        </form>
+    </div>
+
+    <div class="back-link">
+        <a href="{% url 'category_list' %}">
+            <i class="fas fa-arrow-left"></i> Back to Categories
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+
+    .form-card {
+        background: #fff;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    form p {
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        margin-top: 6px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: #e67e22;
+        box-shadow: 0 0 4px rgba(230,126,34,0.5);
+    }
+
+    .btn-submit {
+        background: #e67e22;
+        color: #fff;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        width: 100%;
+        transition: 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background: #d35400;
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+
+    .back-link a {
+        text-decoration: none;
+        color: #3498db;
+        font-weight: bold;
+    }
+
+    .back-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

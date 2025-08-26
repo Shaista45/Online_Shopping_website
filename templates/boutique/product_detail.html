@@ -1,0 +1,259 @@
+{% extends 'boutique/base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <h2>{{ product.name }}</h2>
+    <div class="product-detail">
+        <div class="product-detail-image">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="width: 100%; height: auto;">
+        </div>
+        <div class="product-detail-info">
+            <p class="product-detail-category">Category: {{ product.category.name }}</p>
+            <div class="product-detail-price">
+                {% if product.on_sale and product.sale_price %}
+                    <span class="sale-price">Rs {{ product.sale_price }}</span>
+                    <span class="original-price" style="text-decoration: line-through; color: #777;">Rs {{ product.price }}</span>
+                {% else %}
+                    <span class="price">Rs {{ product.price }}</span>
+                {% endif %}
+            </div>
+            <p class="product-detail-description">{{ product.description }}</p>
+            <div class="product-detail-actions">
+                <button class="wishlist-btn" type="button" data-product-id="{{ product.id }}">
+                    <i class="far fa-heart"></i> Add to Wishlist
+                </button>
+                <button class="cart-btn" type="button" data-product-id="{{ product.id }}">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Detail Modal -->
+<div class="modal" id="productDetailModal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px; margin: 50px auto;">
+        <span class="close-modal" id="closeProductModal">&times;</span>
+        
+        <div class="product-detail">
+            <div class="product-detail-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+            </div>
+            <div class="product-detail-info">
+                <h2>{{ product.name }}</h2>
+                <p class="product-detail-category">Category: {{ product.category.name }}</p>
+                <div class="product-detail-price">
+                    {% if product.on_sale and product.sale_price %}
+                        <span class="sale-price">${{ product.sale_price }}</span>
+                        <span class="original-price" style="text-decoration: line-through; color: #777; margin-left: 10px;">${{ product.price }}</span>
+                    {% else %}
+                        <span class="price">${{ product.price }}</span>
+                    {% endif %}
+                </div>
+                <p class="product-detail-description">{{ product.description }}</p>
+                <div class="product-detail-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="wishlist-btn" type="button" data-product-id="{{ product.id }}" style="flex: 1; padding: 10px; background: none; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                        <i class="far fa-heart"></i> Add to Wishlist
+                    </button>
+                    <button class="cart-btn" type="button" data-product-id="{{ product.id }}" style="flex: 1; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating success message -->
+<div id="success-message" class="floating-message" style="display: none;">
+    <span id="close-success">&times;</span>
+    <p id="message-text"></p>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #777;
+}
+
+.close-modal:hover { color: #000; }
+
+/* Floating success message */
+.floating-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--success, #28a745);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.4s ease-out;
+}
+
+.floating-message span {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Product detail styles remain same */
+.product-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.product-detail-info h2 { color: var(--primary); }
+.sale-price { color: var(--accent); font-weight: bold; font-size: 1.2rem; }
+.price { color: var(--primary); font-weight: bold; font-size: 1.2rem; }
+.product-detail-description { line-height: 1.6; color: #555; }
+
+/* Responsive */
+@media (max-width: 576px) {
+    .modal-content { margin: 20px; padding: 20px; }
+    .product-detail-actions { flex-direction: column; }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show modal on page load for demo
+    document.getElementById('productDetailModal').style.display = 'flex';
+
+    // Close modal
+    document.getElementById('closeProductModal').addEventListener('click', function() {
+        document.getElementById('productDetailModal').style.display = 'none';
+    });
+
+    // Click outside closes modal
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('productDetailModal');
+        if (event.target === modal) modal.style.display = 'none';
+    });
+
+    // Success message handler
+    function showSuccess(message) {
+        const box = document.getElementById("success-message");
+        document.getElementById("message-text").innerText = message;
+        box.style.display = "flex";
+        setTimeout(() => { box.style.display = "none"; }, 3000);
+    }
+    document.getElementById("close-success").addEventListener("click", () => {
+        document.getElementById("success-message").style.display = "none";
+    });
+
+    // Wishlist AJAX
+    document.querySelectorAll('.wishlist-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const icon = this.querySelector('i');
+            
+            fetch(`/wishlist/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    icon.className = 'fas fa-heart';
+                    icon.style.color = '#e74c3c';
+                    this.innerHTML = '<i class="fas fa-heart" style="color: #e74c3c;"></i> In Wishlist';
+                } else if (data.status === 'removed') {
+                    icon.className = 'far fa-heart';
+                    icon.style.color = '';
+                    this.innerHTML = '<i class="far fa-heart"></i> Add to Wishlist';
+                }
+                showSuccess(data.message);
+            })
+            .catch(err => console.error(err));
+        });
+    });
+
+    // Cart AJAX
+    document.querySelectorAll('.cart-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.getAttribute('data-product-id');
+            const originalText = this.innerHTML;
+            
+            fetch(`/cart/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'quantity=1',
+                credentials: 'same-origin'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    this.innerHTML = '<i class="fas fa-check"></i> Added!';
+                    this.style.backgroundColor = 'var(--success)';
+                    showSuccess(data.message);
+
+                    if (document.getElementById('cart-count')) {
+                        document.getElementById('cart-count').textContent = data.count;
+                    }
+                    
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.style.backgroundColor = 'var(--secondary)';
+                    }, 2000);
+                } else {
+                    showSuccess("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showSuccess("An error occurred.");
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

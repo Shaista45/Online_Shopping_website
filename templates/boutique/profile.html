@@ -1,0 +1,170 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Your Profile</h2>
+    
+    <div class="profile-container" style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px;">
+        <div class="profile-sidebar" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div style="text-align: center;">
+                <div style="width: 100px; height: 100px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2.5rem; color: white;">
+                    {{ user.username|first|upper }}
+                </div>
+                <h3>{{ user.username }}</h3>
+                <p>{{ user.email }}</p>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <a href="{% url 'view_wishlist' %}" class="btn" style="width: 100%; margin-bottom: 10px;">
+                    <i class="fas fa-heart"></i> Your Wishlist
+                </a>
+                <a href="{% url 'view_cart' %}" class="btn" style="width: 100%; margin-bottom: 10px;">
+                    <i class="fas fa-shopping-cart"></i> Your Cart
+                </a>
+                <a href="{% url 'user_logout' %}" class="btn" style="width: 100%; background-color:#2c3e50 ;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        <div class="profile-content">
+
+            <div class="profile-stats" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; text-align: center;">
+                <h2 style="margin-bottom: 20px;">Your Activity</h2>
+                <div style="display: flex; justify-content: space-around; align-items: center;">
+                    <div class="stat-item" style="text-align: center;">
+                    <i class="fas fa-box-open" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.3rem;"></i>
+                    <span style="font-size: 2rem; font-weight: bold; display: block; color: var(--primary);">
+                        {{ orders.count }}
+                    </span>
+                    <span style="color: #666;">Orders</span>
+                </div>
+
+                <div class="stat-item" style="text-align: center;">
+                    <i class="fas fa-heart" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.3rem;"></i>
+                    <span style="font-size: 2rem; font-weight: bold; display: block; color: var(--primary);">
+                        {{ wishlist_count|default:0 }}
+                    </span>
+                    <span style="color: #666;">In Wishlist</span>
+                </div>
+
+                <div class="stat-item" style="text-align: center;">
+                    <i class="fas fa-shopping-cart" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.3rem;"></i>
+                    <span style="font-size: 2rem; font-weight: bold; display: block; color: var(--primary);">
+                        {{ cart_items_count|default:0 }}
+                    </span>
+                    <span style="color: #666;">In Cart</span>
+                </div>
+
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                 <button id="toggleEditFormBtn" class="btn">Edit Profile</button>
+            </div>
+
+            <div id="editFormContainer" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; display: none;">
+                <h3 style="margin-bottom: 20px;">Edit Profile Information</h3>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input type="text" id="first_name" name="first_name" class="form-control" value="{{ user.first_name }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input type="text" id="last_name" name="last_name" class="form-control" value="{{ user.last_name }}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone</label>
+                        <input type="text" id="phone" name="phone" class="form-control" value="{{ customer.phone }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="newsletter_subscribed" name="newsletter_subscribed" {% if customer.newsletter_subscribed %}checked{% endif %}>
+                            Subscribe to newsletter
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn">Update Profile</button>
+                </form>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px;">Your Orders</h3>
+                
+                {% if orders %}
+                <div class="orders-list">
+                    {% for order in orders %}
+                    <div style="border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div>
+                                <strong>Order #{{ order.id }}</strong>
+                                <span style="display: block; color: #666; font-size: 0.9rem;">{{ order.order_date|date:"M d, Y" }}</span>
+                            </div>
+                            <div>
+                                {% if order.status == 'delivered' %}
+                                    <span style="padding: 5px 10px; border-radius: 20px; background: #d4edda;">{{ order.status|title }}</span>
+                                {% elif order.status == 'shipped' %}
+                                    <span style="padding: 5px 10px; border-radius: 20px; background: #cce5ff;">{{ order.status|title }}</span>
+                                {% elif order.status == 'processing' %}
+                                    <span style="padding: 5px 10px; border-radius: 20px; background: #fff3cd;">{{ order.status|title }}</span>
+                                {% else %}
+                                    <span style="padding: 5px 10px; border-radius: 20px; background: #f8d7da;">{{ order.status|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between;">
+                            <div>
+                                <strong>${{ order.total_amount }}</strong>
+                                <span style="display: block; color: #666; font-size: 0.9rem;">{{ order.items.count }} items</span>
+                            </div>
+                            <div>
+                                <a href="{% url 'order_detail' order.id %}" class="btn" style="padding: 5px 10px; font-size: 0.9rem;">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>You haven't placed any orders yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('toggleEditFormBtn');
+        const formContainer = document.getElementById('editFormContainer');
+
+        if (toggleBtn && formContainer) {
+            toggleBtn.addEventListener('click', function() {
+                // Check current display state and toggle it
+                if (formContainer.style.display === 'none' || formContainer.style.display === '') {
+                    formContainer.style.display = 'block';
+                    toggleBtn.textContent = 'Cancel Edit'; // Optional: Change button text for better UX
+                } else {
+                    formContainer.style.display = 'none';
+                    toggleBtn.textContent = 'Edit Profile'; // Optional: Change it back
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

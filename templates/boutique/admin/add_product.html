@@ -1,0 +1,77 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Add New Product</h2>
+    
+    <div class="admin-form">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" class="form-control" rows="4" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select id="category" name="category" class="form-control" required>
+                    <option value="">Select Category</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="image">Product Image</label>
+                <input type="file" id="image" name="image" class="form-control" accept="image/*">
+            </div>
+            
+            <div class="form-group">
+                <label for="stock">Stock Quantity</label>
+                <input type="number" id="stock" name="stock" class="form-control" min="0" value="0" required>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="on_sale" name="on_sale">
+                    On Sale
+                </label>
+            </div>
+            
+            <div class="form-group" id="sale_price_group" style="display: none;">
+                <label for="sale_price">Sale Price</label>
+                <input type="number" id="sale_price" name="sale_price" class="form-control" step="0.01" min="0">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="featured" name="featured">
+                    Featured Product
+                </label>
+            </div>
+            
+            <button type="submit" class="btn">Add Product</button>
+            <a href="{% url 'admin_dashboard' %}" class="btn" style="background-color: #6c757d; margin-left: 10px;">Cancel</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Show/hide sale price field based on checkbox
+    document.getElementById('on_sale').addEventListener('change', function() {
+        document.getElementById('sale_price_group').style.display = this.checked ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

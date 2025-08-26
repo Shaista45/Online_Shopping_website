@@ -1,0 +1,51 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 50px auto;">
+    <div class="form-container" style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        <h2 style="text-align: center; margin-bottom: 30px; font-family: var(--font-heading);">Login</h2>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-error">
+                Please correct the errors below.
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required value="{{ form.username.value|default:'' }}">
+                {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+                {% if form.password.errors %}
+                <div class="error">{{ form.password.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; margin-top: 20px;">Login</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 20px;">
+            Don't have an account? <a href="{% url 'register' %}">Register here</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

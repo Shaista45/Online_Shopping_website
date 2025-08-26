@@ -1,0 +1,38 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Order #{{ order.id }} Details</h2>
+    <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); max-width: 700px; margin: 0 auto;">
+        <div style="margin-bottom: 20px;">
+            <strong>Status:</strong> <span style="text-transform: capitalize;">{{ order.status }}</span><br>
+            <strong>Order Date:</strong> {{ order.order_date|date:"M d, Y H:i" }}<br>
+            <strong>Total Amount:</strong> ${{ order.total_amount }}
+        </div>
+        <h4>Items:</h4>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 8px; text-align: left;">Product</th>
+                    <th style="padding: 8px; text-align: left;">Quantity</th>
+                    <th style="padding: 8px; text-align: left;">Price</th>
+                    <th style="padding: 8px; text-align: left;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order_items %}
+                <tr>
+                    <td style="padding: 8px;">{{ item.product.name }}</td>
+                    <td style="padding: 8px;">{{ item.quantity }}</td>
+                    <td style="padding: 8px;">${{ item.price }}</td>
+                    <td style="padding: 8px;">${{ item.price|floatformat:2|add:item.quantity|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top: 20px;">
+            <a href="{% url 'profile' %}" class="btn">Back to Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

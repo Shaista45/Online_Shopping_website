@@ -1,0 +1,48 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2 class="section-title">Your Wishlist</h2>
+    
+    {% if wishlist_items %}
+    <div class="products-grid">
+        {% for product in wishlist_items %}
+        <div class="product-card">
+            {% if product.on_sale %}
+            <div class="product-badge">Sale</div>
+            {% endif %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+            <div class="product-info">
+                <h3 class="product-title">{{ product.name }}</h3>
+                <div class="product-price">
+                    {% if product.on_sale and product.sale_price %}
+                    ${{ product.sale_price }} <span style="text-decoration: line-through; color: #777; font-size: 0.9rem;">${{ product.price }}</span>
+                    {% else %}
+                    ${{ product.price }}
+                    {% endif %}
+                </div>
+                <div class="product-actions">
+                    <button class="wishlist-btn" data-product-id="{{ product.id }}">
+                        <i class="fas fa-heart" style="color: #e74c3c;"></i>
+                    </button>
+                    <button class="cart-btn" data-product-id="{{ product.id }}">
+                        <i class="fas fa-shopping-cart"></i>
+                    </button>
+                    <a href="{% url 'product_detail' product.id %}" class="quick-view-btn">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 50px 0;">
+        <i class="fas fa-heart" style="font-size: 4rem; color: #ddd; margin-bottom: 20px;"></i>
+        <h3>Your wishlist is empty</h3>
+        <p>Start shopping to add items to your wishlist</p>
+        <a href="{% url 'product_list' %}" class="btn">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

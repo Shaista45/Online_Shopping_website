@@ -1,0 +1,107 @@
+{% extends 'boutique/base.html' %}
+
+{% block content %}
+<div class="floating-box-overlay">
+    <div class="floating-box">
+        <h2 class="section-title">Edit Product</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-buttons">
+                <button type="submit" class="btn">Save Changes</button>
+                <a href="{% url 'admin_dashboard' %}" class="btn cancel-btn">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Overlay to cover the background */
+.floating-box-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* space for smaller screens */
+    z-index: 1000;
+}
+
+/* The floating box */
+.floating-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh; /* allows vertical scrolling if content is tall */
+    overflow-y: auto;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* Section title */
+.section-title {
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Make input boxes round and appealing */
+.floating-box input,
+.floating-box select,
+.floating-box textarea {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+.floating-box input:focus,
+.floating-box select:focus,
+.floating-box textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Buttons */
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 8px;
+    background-color: #c19a6b;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #2c3e50;
+}
+
+.cancel-btn {
+    background-color: #2c3e50;
+}
+
+.cancel-btn:hover {
+    background-color: #5a6268;
+}
+</style>
+{% endblock %}

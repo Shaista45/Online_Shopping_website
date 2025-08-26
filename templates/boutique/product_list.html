@@ -1,0 +1,684 @@
+
+{% extends 'boutique/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Autumn Collection 2025</h1>
+            <p>Discover our new elegant pieces crafted with attention to detail and timeless style.</p>
+            <a href="{% url 'product_list' %}?sort=newest" class="btn">Shop Now</a>
+        </div>
+    </div>
+</section>
+
+<!-- Filter + Products Section -->
+<div class="container">
+    <h2 class="section-title">Featured Products</h2>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <h3 class="filter-title">Filter Products</h3>
+        <form method="GET" action="{% url 'product_list' %}">
+            <div class="filter-options">
+                <div class="filter-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="price">Price Range</label>
+                    <select id="price" name="price">
+                        <option value="">All Prices</option>
+                        <option value="0-14000" {% if selected_price == '0-14000' %}selected{% endif %}>PKR 0 - PKR 14,000</option>
+                        <option value="14000-28000" {% if selected_price == '14000-28000' %}selected{% endif %}>PKR 14,000 - PKR 28,000</option>
+                        <option value="28000-56000" {% if selected_price == '28000-56000' %}selected{% endif %}>PKR 28,000 - PKR 56,000</option>
+                        <option value="56000+" {% if selected_price == '56000+' %}selected{% endif %}>PKR 56,000+</option>
+
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="sort">Sort By</label>
+                    <select id="sort" name="sort">
+                        <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
+                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
+                        <option value="price-low" {% if selected_sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price-high" {% if selected_sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="search">Search</label>
+                    <input type="text" id="search" name="search" placeholder="Product name..." value="{{ search_query }}">
+                </div>
+
+                <div class="filter-group">
+                    <button type="submit" class="btn">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            {% if product.on_sale %}
+            <div class="product-badge">Sale</div>
+            {% endif %}
+
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img">
+            {% else %}
+            <img src="{% static 'boutique/images/placeholder.png' %}" alt="{{ product.name }}" class="product-img">
+            {% endif %}
+
+            <div class="product-info">
+                <h3 class="product-title">{{ product.name }}</h3>
+                <div class="product-price">
+                    {% if product.on_sale and product.sale_price %}
+                        Rs {{ product.sale_price }} <span style="text-decoration: line-through; color: #777; font-size: 0.9rem;">Rs {{ product.price }}</span>
+                    {% else %}
+                        Rs {{ product.price }}
+                    {% endif %}
+                </div>
+
+                <div class="product-actions">
+                    {# Wishlist button: red heart if in wishlist #}
+                    <button class="wishlist-btn" data-product-id="{{ product.id }}" aria-label="Wishlist">
+                        {% if product.id|stringformat:"s" in wishlist_product_ids %}
+                            <i class="fas fa-heart" style="color: #e74c3c;"></i>
+                        {% else %}
+                            <i class="far fa-heart"></i>
+                        {% endif %}
+                    </button>
+
+                    {# Cart button: green if in cart #}
+                    <button class="cart-btn" data-product-id="{{ product.id }}" aria-label="Add to cart">
+                        {% if product.id|stringformat:"s" in cart_product_ids %}
+                            <i class="fas fa-shopping-cart" style="color: #27ae60;"></i>
+                        {% else %}
+                            <i class="fas fa-shopping-cart"></i>
+                        {% endif %}
+                    </button>
+
+                    <button class="quick-view-btn" data-product-id="{{ product.id }}" title="Quick view">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>No products found.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if products.has_other_pages %}
+    <div class="pagination">
+        {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">&laquo; Previous</a>
+        {% endif %}
+
+        {% for i in products.paginator.page_range %}
+            {% if products.number == i %}
+                <span class="page-link current">{{ i }}</span>
+            {% else %}
+                <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">Next &raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- when Quick-View is clicked a popup apper to display product detail from product_detail.html-->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const quickViewButtons = document.querySelectorAll(".quick-view-btn");
+        quickViewButtons.forEach(button => {
+            button.addEventListener("click", function() {
+                const productId = this.getAttribute("data-product-id");
+                // Fetch product details via AJAX
+                fetch(`/product/${productId}/`)
+                    .then(response => response.text())
+                    .then(html => {
+                        // Insert the fetched HTML into the modal
+                        document.getElementById("product-modal-content").innerHTML = html;
+                        // Show the modal
+                        document.getElementById("product-modal-overlay").style.display = "flex";
+                    })
+                    .catch(error => {
+                        console.error("Error fetching product details:", error);
+                    });
+            });
+        });
+
+        // Close modal when clicking outside of the content
+        document.getElementById("product-modal-overlay").addEventListener("click", function(event) {
+            if (event.target === this) {
+                this.style.display = "none";
+            }
+        });
+    });
+</script>
+
+<!-- Product Quick-View Modal Overlay (for HTML-based quick view fallback) -->
+<div id="product-modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:3000; align-items:center; justify-content:center;">
+    <div id="product-modal-content" style="background:white; border-radius:8px; max-width:700px; width:95vw; margin:auto; position:relative; padding:20px;"></div>
+</div>
+
+<!-- Bootstrap Quick View Modal -->
+<div class="modal fade" id="quick-view-modal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold" id="quickViewModalLabel">Product Quick View</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center">
+                        <img id="quick-view-image" src="" alt="Product Image" class="img-fluid rounded shadow-sm" style="max-height: 350px; object-fit: cover; width: 100%;">
+                    </div>
+                    <div class="col-md-6">
+                        <h3 id="quick-view-title" class="mb-3 fw-bold text-dark">Product Title</h3>
+                        <div id="quick-view-price" class="h4 text-primary mb-3 fw-bold">Rs 0</div>
+                        
+                        <div id="quick-view-description" class="mb-4 text-muted lh-base">
+                            Product description will appear here.
+                        </div>
+                        
+                        <div class="d-flex gap-2 mb-4">
+                            <span class="badge bg-success">In Stock</span>
+                            <span class="badge bg-info text-dark">Free Shipping</span>
+                        </div>
+
+                        <div class="quick-view-actions d-grid gap-3">
+                            <button id="add-to-cart-btn" class="btn btn-primary btn-lg py-3 fw-semibold" data-product-id="">
+                                <i class="fas fa-shopping-cart me-2"></i>Add to Cart
+                            </button>
+                            <button id="add-to-wishlist-btn" class="btn btn-outline-dark py-3" data-product-id="">
+                                <i class="fas fa-heart me-2"></i>Add to Wishlist
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Utility: get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
+
+// Small helper to safely query an element
+function $(selector) { return document.querySelector(selector); }
+
+// Toast messages
+function showMessage(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast-message ${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span style="margin-left:8px;">${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    // show
+    setTimeout(() => toast.classList.add('show'), 10);
+    // remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 3000);
+}
+
+function showLoginPrompt() {
+    showMessage('Please login to add items to your wishlist or cart.', 'error');
+    // If you have a login modal in base, you can open it here. This template only shows a toast.
+}
+
+// Event delegation for product actions (wishlist, cart, quick-view)
+document.addEventListener('click', function(event) {
+    // Wishlist button
+    const wishlistBtn = event.target.closest('.wishlist-btn');
+    if (wishlistBtn) {
+        event.preventDefault();
+        const productId = wishlistBtn.getAttribute('data-product-id');
+        if (!isAuthenticated) { showLoginPrompt(); return; }
+
+        const originalInner = wishlistBtn.innerHTML;
+        wishlistBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(`/wishlist/add/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'added') {
+                wishlistBtn.innerHTML = '<i class="fas fa-heart" style="color: #e74c3c;"></i>';
+                showMessage('Added to wishlist');
+            } else if (data.status === 'removed') {
+                wishlistBtn.innerHTML = '<i class="far fa-heart"></i>';
+                showMessage('Removed from wishlist');
+            } else {
+                wishlistBtn.innerHTML = originalInner;
+                showMessage(data.message || 'Unexpected response', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            wishlistBtn.innerHTML = originalInner;
+            showMessage('An error occurred. Try again.', 'error');
+        });
+        return;
+    }
+
+    // Cart button
+    const cartBtn = event.target.closest('.cart-btn');
+    if (cartBtn) {
+        event.preventDefault();
+        const productId = cartBtn.getAttribute('data-product-id');
+        if (!isAuthenticated) { showLoginPrompt(); return; }
+
+        const originalInner = cartBtn.innerHTML;
+        cartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        cartBtn.disabled = true;
+
+        fetch(`/cart/add/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'quantity=1',
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // update cart count if present
+                const cartCount = document.getElementById('cart-count');
+                if (cartCount && data.count !== undefined) cartCount.textContent = data.count;
+                showMessage('Added to cart');
+            } else {
+                showMessage(data.message || 'Could not add to cart', 'error');
+            }
+            cartBtn.innerHTML = originalInner;
+            cartBtn.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage('An error occurred. Try again.', 'error');
+            cartBtn.innerHTML = originalInner;
+            cartBtn.disabled = false;
+        });
+        return;
+    }
+
+    // Quick view (API)
+    const quickView = event.target.closest('.quick-view-btn');
+    if (quickView) {
+        event.preventDefault();
+        const productId = quickView.getAttribute('data-product-id') || quickView.href.split('/').filter(Boolean).pop();
+
+        const originalInner = quickView.innerHTML;
+        quickView.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        fetch(`/api/products/${productId}/`)
+        .then(res => {
+            if (!res.ok) throw new Error('Network response not ok');
+            return res.json();
+        })
+        .then(product => {
+            // populate modal
+            const qvModal = document.getElementById('quick-view-modal');
+            const qvImage = document.getElementById('quick-view-image');
+            const qvTitle = document.getElementById('quick-view-title');
+            const qvPrice = document.getElementById('quick-view-price');
+            const qvDesc = document.getElementById('quick-view-description');
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            const addToWishlistBtn = document.getElementById('add-to-wishlist-btn');
+
+            // Set product data in modal
+            qvImage.src = product.image || '{% static "boutique/images/placeholder.png" %}';
+            qvImage.alt = product.name;
+            qvTitle.textContent = product.name;
+            
+            // Handle pricing display
+            if (product.on_sale && product.sale_price) {
+                qvPrice.innerHTML = `<span class="sale-price">Rs ${product.sale_price}</span> <span class="original-price" style="text-decoration: line-through; color: #777; font-size: 0.9rem;">Rs ${product.price}</span>`;
+            } else {
+                qvPrice.textContent = `Rs ${product.price}`;
+            }
+            
+            qvDesc.textContent = product.description || 'No description available';
+
+            if (addToCartBtn) {
+                addToCartBtn.setAttribute('data-product-id', product.id);
+                addToCartBtn.disabled = false;
+                addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>Add to Cart';
+            }
+            if (addToWishlistBtn) {
+                addToWishlistBtn.setAttribute('data-product-id', product.id);
+                addToWishlistBtn.disabled = false;
+                addToWishlistBtn.innerHTML = '<i class="fas fa-heart me-2"></i>Add to Wishlist';
+            }
+
+            if (qvModal) {
+                // Check if Bootstrap is available
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    const modal = new bootstrap.Modal(qvModal);
+                    modal.show();
+                } else {
+                    // Fallback: show the modal manually
+                    qvModal.style.display = 'block';
+                    qvModal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                }
+            }
+            quickView.innerHTML = originalInner;
+        })
+        .catch(err => {
+            console.error('Error fetching product details:', err);
+            quickView.innerHTML = originalInner;
+            showMessage('Error loading product details. Please try again.', 'error');
+        });
+        return;
+    }
+});
+
+
+// Handle modal close button (fallback for when Bootstrap is not available)
+document.addEventListener('click', function(event) {
+    const closeBtn = event.target.closest('.btn-close');
+    if (closeBtn) {
+        const modal = closeBtn.closest('.modal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+        }
+    }
+    const addToCartBtn = event.target.closest('#add-to-cart-btn');
+    if (addToCartBtn) {
+        event.preventDefault();
+        const productId = addToCartBtn.getAttribute('data-product-id');
+        if (!isAuthenticated) { showLoginPrompt(); return; }
+
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Adding...';
+
+        fetch(`/cart/add/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken, 'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'quantity=1',
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage('Added to cart');
+                // update count if present
+                const cartCount = document.getElementById('cart-count');
+                if (cartCount && data.count !== undefined) cartCount.textContent = data.count;
+            } else {
+                showMessage(data.message || 'Could not add to cart', 'error');
+            }
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Add to Cart';
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage('An error occurred', 'error');
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Add to Cart';
+        });
+    }
+
+    const addToWishlistBtn = event.target.closest('#add-to-wishlist-btn');
+    if (addToWishlistBtn) {
+        event.preventDefault();
+        const productId = addToWishlistBtn.getAttribute('data-product-id');
+        if (!isAuthenticated) { showLoginPrompt(); return; }
+
+        addToWishlistBtn.disabled = true;
+        addToWishlistBtn.textContent = 'Saving...';
+
+        fetch(`/wishlist/add/${productId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken, 'Content-Type': 'application/json'},
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'added') {
+                showMessage('Added to wishlist');
+                addToWishlistBtn.textContent = 'Saved';
+            } else if (data.status === 'removed') {
+                showMessage('Removed from wishlist');
+                addToWishlistBtn.textContent = 'Add to Wishlist';
+            } else {
+                showMessage(data.message || 'Unexpected response', 'error');
+            }
+            addToWishlistBtn.disabled = false;
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage('An error occurred', 'error');
+            addToWishlistBtn.disabled = false;
+            addToWishlistBtn.textContent = 'Add to Wishlist';
+        });
+    }
+});
+
+// Newsletter AJAX (only if newsletter form exists)
+const newsletterForm = document.getElementById('newsletter-form');
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/newsletter/subscribe/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            body: formData,
+            credentials: 'same-origin'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage('Subscribed to newsletter successfully!');
+                this.reset();
+            } else {
+                showMessage(data.message || 'Subscription failed', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showMessage('An error occurred. Please try again.', 'error');
+        });
+    });
+}
+</script>
+
+<style>
+/* Ensure modal overlay never blocks pointer events when hidden */
+#product-modal-overlay[style*="display: none"],
+#product-modal-overlay:not([style*="display: flex"]) {
+    pointer-events: none !important;
+    opacity: 0 !important;
+}
+
+/* Toast message styles */
+.toast-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.25s ease;
+    max-width: 340px;
+}
+
+.toast-message.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-message.success { border-left: 4px solid #2ecc71; }
+.toast-message.error { border-left: 4px solid #e74c3c; }
+
+.toast-content { display:flex; align-items:center; gap:10px; }
+.toast-content i { font-size:1.1rem; }
+
+/* Enhanced modal styling */
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e9ecef;
+    padding: 1.5rem 1.5rem 1rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.btn-close {
+    padding: 0.5rem;
+    margin: -0.5rem -0.5rem -0.5rem auto;
+}
+
+/* Quick view button styling */
+.quick-view-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.quick-view-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.quick-view-btn:active {
+    transform: translateY(0);
+}
+
+/* Product actions container */
+.product-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Button hover effects */
+.wishlist-btn:hover,
+.cart-btn:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+/* Modal button enhancements */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-outline-dark:hover {
+    background-color: #343a40;
+    color: white;
+}
+
+/* Price styling enhancements */
+.sale-price {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.original-price {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 1rem;
+    }
+    
+    .modal-body .row {
+        flex-direction: column;
+    }
+    
+    .col-md-6 {
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    
+    .quick-view-actions {
+        gap: 1rem !important;
+    }
+}
+</style>
+{% endblock %}
