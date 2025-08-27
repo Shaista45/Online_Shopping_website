@@ -19,7 +19,7 @@
                 </div>
                 
                 <div style="margin-right: 20px; text-align: center;">
-                    <div style="font-weight: bold; color: var(--accent);">${{ item.price }}</div>
+                    <div style="font-weight: bold; color: var(--accent);">PKR{{ item.price }}</div>
                     <div style="display: flex; align-items: center; margin-top: 5px;">
                         <button class="quantity-btn" data-product-id="{{ item.product.id }}" data-action="decrease" style="background: #eee; border: none; width: 30px; height: 30px; border-radius: 4px; cursor: pointer;">-</button>
                         <span style="margin: 0 10px; font-weight: bold;">{{ item.quantity }}</span>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 
-                <div style="margin-right: 20px; font-weight: bold;">${{ item.total }}</div>
+                <div style="margin-right: 20px; font-weight: bold;">PKR{{ item.total }}</div>
                 
                 <button class="remove-from-cart" data-product-id="{{ item.product.id }}" style="background: none; border: none; color: var(--accent); cursor: pointer;">
                     <i class="fas fa-trash"></i>
@@ -41,17 +41,17 @@
             
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span>Subtotal</span>
-                <span>${{ cart_total }}</span>
+                <span>PKR{{ cart_total }}</span>
             </div>
             
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                 <span>Shipping</span>
-                <span>$10.00</span>
+                <span>PKR10.00</span>
             </div>
             
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-weight: bold;">
                 <span>Total</span>
-                <span>${{ cart_total|add:10 }}</span>
+                <span>PKR{{ cart_total|add:10 }}</span>
             </div>
             
             <a href="{% url 'checkout' %}" class="btn" style="width: 100%;">Proceed to Checkout</a>

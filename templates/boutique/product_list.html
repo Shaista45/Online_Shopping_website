@@ -19,55 +19,60 @@
     <h2 class="section-title">Featured Products</h2>
 
     <!-- Filter Section -->
-    <div class="filter-section">
-        <h3 class="filter-title">Filter Products</h3>
-        <form method="GET" action="{% url 'product_list' %}">
-            <div class="filter-options">
-                <div class="filter-group">
-                    <label for="category">Category</label>
-                    <select id="category" name="category">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}" {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="price">Price Range</label>
-                    <select id="price" name="price">
-                        <option value="">All Prices</option>
-                        <option value="0-14000" {% if selected_price == '0-14000' %}selected{% endif %}>PKR 0 - PKR 14,000</option>
-                        <option value="14000-28000" {% if selected_price == '14000-28000' %}selected{% endif %}>PKR 14,000 - PKR 28,000</option>
-                        <option value="28000-56000" {% if selected_price == '28000-56000' %}selected{% endif %}>PKR 28,000 - PKR 56,000</option>
-                        <option value="56000+" {% if selected_price == '56000+' %}selected{% endif %}>PKR 56,000+</option>
-
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="sort">Sort By</label>
-                    <select id="sort" name="sort">
-                        <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
-                        <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
-                        <option value="price-low" {% if selected_sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
-                        <option value="price-high" {% if selected_sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="search">Search</label>
-                    <input type="text" id="search" name="search" placeholder="Product name..." value="{{ search_query }}">
-                </div>
-
-                <div class="filter-group">
-                    <button type="submit" class="btn">Apply Filters</button>
-                </div>
+<div class="filter-section">
+    <h3 class="filter-title">Filter Products</h3>
+    <form method="GET" action="{% url 'product_list' %}">
+        <div class="filter-options" style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; margin-bottom: 15px;">
+            
+            <div class="filter-group">
+                <label for="category">Category</label>
+                <select id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
             </div>
-        </form>
-    </div>
+
+            <div class="filter-group">
+                <label for="price">Price Range</label>
+                <select id="price" name="price">
+                    <option value="">All Prices</option>
+                    <option value="0-500" {% if selected_price == '0-500' %}selected{% endif %}>PKR 0 - PKR 500</option>
+                    <option value="500-1000" {% if selected_price == '500-1000' %}selected{% endif %}>PKR 500 - PKR 1000</option>
+                    <option value="1000-3000" {% if selected_price == '1000-3000' %}selected{% endif %}>PKR 1000 - PKR 3000</option>
+                    <option value="3000+" {% if selected_price == '3000+' %}selected{% endif %}>PKR 3000+</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sort">Sort By</label>
+                <select id="sort" name="sort">
+                    <option value="featured" {% if selected_sort == 'featured' %}selected{% endif %}>Featured</option>
+                    <option value="newest" {% if selected_sort == 'newest' %}selected{% endif %}>Newest</option>
+                    <option value="price-low" {% if selected_sort == 'price-low' %}selected{% endif %}>Price: Low to High</option>
+                    <option value="price-high" {% if selected_sort == 'price-high' %}selected{% endif %}>Price: High to Low</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="search">Search</label>
+                <input type="text" id="search" name="search" placeholder="Product name..." value="{{ search_query }}">
+            </div>
+
+            <!-- Apply & Clear buttons -->
+            <div class="filter-group" style="display: flex; gap: 8px; align-items: flex-end;">
+                <button type="submit" class="btn">Apply</button>
+                <a href="{% url 'product_list' %}" class="btn" 
+                style="background: #2c3e50; color: rgb(247, 243, 243); padding: 8px 15px;  font-size: 16px; border-radius: 40px;">
+                Clear</a>
+            </div>
+
+        </div>
+    </form>
+</div>
 
     <!-- Products Grid -->
     <div class="products-grid">
@@ -111,6 +116,10 @@
                             <i class="fas fa-shopping-cart"></i>
                         {% endif %}
                     </button>
+                    <!-- <form method="post" action="{% url 'add_to_cart' product.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">🛒</button>
+                    </form> -->
                     
                      <a href="{% url 'product_detail' product.id %}" class="quick-view-btn" data-product-id="{{ product.id }}" title="Quick view">
                         <i class="fas fa-eye"></i>

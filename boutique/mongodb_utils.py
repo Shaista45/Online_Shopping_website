@@ -105,6 +105,7 @@ def get_cart_mongo(user_id):
             return cart_items
         return []
 
+
 def get_cart_count_mongo(user_id):
     """Get cart item count for user"""
     try:

@@ -1,3 +1,5 @@
+# shaista45/online_shopping_website/Online_Shopping_website-138fd2c2a9d203638ceba42d49eb07cdb4f95a2d/boutique/views.py
+
 from django.http import Http404
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
@@ -27,34 +29,43 @@ def is_admin(user):
     return user.is_staff
  
 
+from django.shortcuts import render
+from .models import Product, Category
+
+
 def product_list(request):
-    category_name = request.GET.get('category')
-    price_range = request.GET.get('price')
-    sort_by = request.GET.get('sort', 'featured')
+    # Get filters from request
     search_query = request.GET.get('search', '')
-    on_sale = request.GET.get('on_sale')
-    
+    selected_category = request.GET.get('category', '')
+    selected_price = request.GET.get('price', '')
+    sort_by = request.GET.get('sort', '')
+    on_sale = request.GET.get('on_sale', '')
+
+    # Start with all products
     products = Product.objects.all()
-    
-    if category_name:
-        products = products.filter(category__name=category_name)
-    
+
+    # Apply search filter
     if search_query:
-        products = products.filter(Q(name__icontains=search_query) | Q(description__icontains=search_query))
-    
-    if price_range:
-        if price_range == '0-50':
-            products = products.filter(price__lte=50)
-        elif price_range == '50-100':
-            products = products.filter(price__gte=50, price__lte=100)
-        elif price_range == '100-200':
-            products = products.filter(price__gte=100, price__lte=200)
-        elif price_range == '200+':
-            products = products.filter(price__gte=200)
-    
+        products = products.filter(name__icontains=search_query)
+
+    # Apply category filter
+    if selected_category:
+        products = products.filter(category_id=selected_category)
+
+    # Apply price filter
+    if selected_price:
+        if '-' in selected_price:
+            min_price, max_price = selected_price.split('-')
+            products = products.filter(price__gte=min_price, price__lte=max_price)
+        elif '+' in selected_price:
+            min_price = selected_price.replace('+', '')
+            products = products.filter(price__gte=min_price)
+
+    # On sale filter
     if on_sale:
         products = products.filter(on_sale=True)
-    
+
+    # Sorting
     if sort_by == 'newest':
         products = products.order_by('-created_at')
     elif sort_by == 'price-low':
@@ -63,15 +74,16 @@ def product_list(request):
         products = products.order_by('-price')
     elif sort_by == 'featured':
         products = products.filter(featured=True)
-    
+
     # Pagination
-    paginator = Paginator(products, 12)
+    paginator = Paginator(products, 8)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    # Categories
     categories = Category.objects.all()
-    
-    # Get cart and wishlist product IDs for the current user
+
+    # Cart & wishlist product IDs
     cart_product_ids = set()
     wishlist_product_ids = set()
     if request.user.is_authenticated:
@@ -87,14 +99,15 @@ def product_list(request):
     return render(request, 'boutique/product_list.html', {
         'products': page_obj,
         'categories': categories,
-        'selected_category': category_name,
+        'selected_category': selected_category,
         'selected_sort': sort_by,
-        'selected_price': price_range,
+        'selected_price': selected_price,
         'search_query': search_query,
         'on_sale': on_sale,
         'cart_product_ids': cart_product_ids,
         'wishlist_product_ids': wishlist_product_ids
     })
+
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -161,16 +174,25 @@ def toggle_wishlist(request, product_id):
 
 # Order detail view
 @login_required
+# def order_detail(request, order_id):
+#     try:
+#         order = Order.objects.get(id=order_id, customer=request.user.customer)
+#     except (Order.DoesNotExist, Customer.DoesNotExist):
+#         raise Http404("Order not found.")
+#     order_items = order.items.select_related('product').all()
+#     return render(request, 'boutique/order_detail.html', {
+#         'order': order,
+#         'order_items': order_items
+#     })
 def order_detail(request, order_id):
-    try:
-        order = Order.objects.get(id=order_id, customer=request.user.customer)
-    except (Order.DoesNotExist, Customer.DoesNotExist):
-        raise Http404("Order not found.")
-    order_items = order.items.select_related('product').all()
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order_items = order.items.all()   # Assuming related_name="items" in OrderItem model
     return render(request, 'boutique/order_detail.html', {
         'order': order,
         'order_items': order_items
     })
+
+
 
 @login_required
 def view_wishlist(request):
@@ -249,25 +271,25 @@ def view_cart(request):
 def add_to_cart(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
-        quantity = int(request.POST.get('quantity', 1))
-        
-        # Calculate price (use sale price if available)
-        price = float(product.sale_price if product.on_sale and product.sale_price else product.price)
-        
-        add_to_cart_mongo(
-            request.user.id, 
-            str(product_id), 
-            product.name, 
-            quantity, 
-            price
-        )
-        
-        return JsonResponse({
-            'status': 'success', 
-            'message': 'Product added to cart', 
-            'count': get_cart_count_mongo(request.user.id) or 0
-        })
-    
+        cart_items = get_cart_mongo(request.user.id) or []
+
+        # Check if product already in cart
+        product_in_cart = any(str(item.get('product_id')) == str(product_id) for item in cart_items)
+
+        if product_in_cart:
+            remove_from_cart_mongo(request.user.id, str(product_id))
+            return JsonResponse({'status': 'removed', 'message': 'Product removed from cart'})
+        else:
+            # Passing quantity=1 and product.price
+            add_to_cart_mongo(
+                request.user.id,
+                str(product_id),
+                product.name,
+                quantity=1,
+                price=product.price
+            )
+            return JsonResponse({'status': 'added', 'message': 'Product added to cart'})
+
     except Product.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Product not found'})
     except Exception as e:
@@ -751,3 +773,4 @@ def debug_cart(request):
         output += f"<p>MongoDB connection error: {e}</p>"
     
     return HttpResponse(output)
+    

@@ -33,16 +33,28 @@
                 </div>
                 
                 <div class="product-detail-actions">
-                    <button class="wishlist-btn" type="button" data-product-id="{{ product.id }}">
-                        {% if product.id|stringformat:"s" in wishlist_product_ids %}
-                            <i class="fas fa-heart" style="color: #e74c3c;"></i> In Wishlist
-                        {% else %}
-                            <i class="far fa-heart"></i> Add to Wishlist
-                        {% endif %}
-                    </button>
-                    <button class="cart-btn" type="button" data-product-id="{{ product.id }}">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
+                    <form method="post" action="{% url 'add_to_cart' product.id %}" class="cart-form" data-product-id="{{ product.id }}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary add-to-cart">
+                            {% if product.id|stringformat:"s" in cart_product_ids %}
+                                <i class="fas fa-cart" style="color: #4ff522;"></i> In Cart
+                            {% else %}
+                                <i class="far fa-cart"></i> Add to Cart
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'add_to_wishlist' product.id %}" class="wishlist-form" data-product-id="{{ product.id }}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-wishlist">
+                            {% if product.id|stringformat:"s" in wishlist_product_ids %}
+                                <i class="fas fa-heart" style="color: #e74c3c;"></i> In Wishlist
+                            {% else %}
+                                <i class="far fa-heart"></i> Add to Wishlist
+                            {% endif %}
+                        </button>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -179,38 +191,6 @@
     margin-top: 15px;
 }
 
-.wishlist-btn, .cart-btn {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.wishlist-btn {
-    background: none;
-    border: 1px solid #ddd;
-    color: #333;
-}
-
-.wishlist-btn:hover {
-    background-color: #f9f9f9;
-}
-
-.cart-btn {
-    background-color: #c19a6b;
-    color: white;
-}
-
-.cart-btn:hover {
-    background-color: #2c3e50;
-}
-
 /* Floating success message */
 .floating-message {
     position: fixed;
@@ -260,177 +240,94 @@
 }
 </style>
 {% endblock %}
-
-{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Get CSRF token for AJAX requests
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    const csrftoken = getCookie('csrftoken');
-    const isAuthenticated = "{{ user.is_authenticated }}" === "True";
-    
-    // Success message handler
-    function showSuccess(message, isError = false) {
-        const box = document.getElementById("success-message");
-        document.getElementById("message-text").innerText = message;
-        box.style.display = "flex";
-        
-        if (isError) {
-            box.style.background = "#dc3545";
+document.addEventListener("DOMContentLoaded", function() {
+    // Function to show notification
+    function showNotification(message, type) {
+        const successMessage = document.getElementById("success-message");
+        const messageText = document.getElementById("message-text");
+        messageText.textContent = message;
+
+        // Change background color based on type
+        if (type === "success") {
+            successMessage.style.backgroundColor = "#28a745"; // Green
+        } else if (type === "warning") {
+            successMessage.style.backgroundColor = "#ffc107"; // Yellow
         } else {
-            box.style.background = "#28a745";
+            successMessage.style.backgroundColor = "#dc3545"; // Red
         }
-        
-        setTimeout(() => { box.style.display = "none"; }, 3000);
-    }
-    
-    // Close success message when X is clicked
-    document.getElementById("close-success").addEventListener("click", () => {
-        document.getElementById("success-message").style.display = "none";
-    });
 
-    // Close the product detail when clicking outside the floating box
-    document.querySelector('.floating-box-overlay').addEventListener('click', function(e) {
-        if (e.target === this) {
-            window.history.back();
-        }
-    });
-
-    // Show login prompt if user is not authenticated
-    function showLoginPrompt() {
-        showSuccess('Please login to add items to your wishlist or cart.', true);
+        successMessage.style.display = "flex"; // Show the message
+        setTimeout(() => {
+            successMessage.style.display = "none"; // Hide after 2 seconds
+        }, 2000);
     }
 
-    // Wishlist AJAX
-    document.querySelectorAll('.wishlist-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!isAuthenticated) {
-                showLoginPrompt();
-                return;
-            }
-            
-            const productId = this.getAttribute('data-product-id');
-            const icon = this.querySelector('i');
-            const originalHtml = this.innerHTML;
-            
-            // Show loading state
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            this.disabled = true;
-            
-            fetch(`/wishlist/add/${productId}/`, {
-                method: 'POST',
+    // Handle cart button submission
+    document.querySelectorAll(".cart-form").forEach(form => {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            let url = this.action; // Get the form action URL
+            let productId = this.dataset.productId; // Get the product ID from data attribute
+
+            fetch(url, {
+                method: "POST",
                 headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
                 },
-                body: '',  // send empty body so Django treats it as POST
-                credentials: 'same-origin'
+                body: JSON.stringify({}) // Send an empty body for POST
             })
-
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                if (data.status === 'added') {
-                    this.innerHTML = '<i class="fas fa-heart" style="color: #e74c3c;"></i> In Wishlist';
-                    showSuccess(data.message || 'Added to wishlist!');
-                } else if (data.status === 'removed') {
-                    this.innerHTML = '<i class="far fa-heart"></i> Add to Wishlist';
-                    showSuccess(data.message || 'Removed from wishlist!');
+                console.log('Data:', data); // Log the parsed data
+                if (data.status === "added") {
+                    showNotification(data.message, "success");
+                } else if (data.status === "removed") {
+                    showNotification(data.message, "warning");
                 } else {
-                    this.innerHTML = originalHtml;
-                    showSuccess(data.message || 'Operation completed');
+                    showNotification(data.message, "error");
                 }
-                this.disabled = false;
             })
             .catch(error => {
                 console.error('Error:', error);
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-                showSuccess('Error processing request. Please try again.', true);
+                showNotification("An error occurred. Please try again.", "error");
             });
         });
     });
 
-    // Cart AJAX
-    document.querySelectorAll('.cart-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!isAuthenticated) {
-                showLoginPrompt();
-                return;
-            }
-            
-            const productId = this.getAttribute('data-product-id');
-            const originalHtml = this.innerHTML;
-            const originalBgColor = this.style.backgroundColor;
-            
-            // Show loading state
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-            this.disabled = true;
-            
-            fetch(`/cart/add/${productId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'quantity=1',
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    this.innerHTML = '<i class="fas fa-check"></i> Added!';
-                    this.style.backgroundColor = '#28a745';
-                    showSuccess(data.message || 'Added to cart!');
+    // Handle wishlist button submission
+    document.querySelectorAll(".wishlist-form").forEach(form => {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            let url = this.action; // Get the form action URL
+            let productId = this.dataset.productId; // Get the product ID from data attribute
 
-                    // Update cart count if element exists
-                    const cartCountElement = document.getElementById('cart-count');
-                    if (cartCountElement && data.count !== undefined) {
-                        cartCountElement.textContent = data.count;
-                    }
-                    
-                    // Revert button after 2 seconds
-                    setTimeout(() => {
-                        this.innerHTML = originalHtml;
-                        this.style.backgroundColor = originalBgColor;
-                        this.disabled = false;
-                    }, 2000);
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({}) // Send an empty body for POST
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Data:', data); // Log the parsed data
+                if (data.status === "added") {
+                    showNotification(data.message, "success");
+                } else if (data.status === "removed") {
+                    showNotification(data.message, "warning");
                 } else {
-                    this.innerHTML = originalHtml;
-                    this.disabled = false;
-                    showSuccess(data.message || 'Error adding to cart', true);
+                    showNotification(data.message, "error");
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                this.innerHTML = originalHtml;
-                this.disabled = false;
-                showSuccess('Error adding to cart. Please try again.', true);
+                showNotification("An error occurred. Please try again.", "error");
             });
         });
     });
 });
 </script>
-{% endblock %}
