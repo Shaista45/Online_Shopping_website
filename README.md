@@ -75,8 +75,8 @@ while providing admins with tools to manage products, users, and orders.
    Visit `http://127.0.0.1:8000/` in your browser to view the application.
 
 ## 🔐 Admin Access
- username= admin
- password=admin123s
+ * username= admin
+ * password=admin123
 
 To access the admin dashboard:
 
