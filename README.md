@@ -1,24 +1,34 @@
 
 # 🛍️ Online Shopping Website
 
-**A full-stack e-commerce web application built with Django.**
+A full-stack e-commerce web application built with Django 🐍.
+This project allows users to browse products, manage carts & wishlists, and place orders, 
+while providing admins with tools to manage products, users, and orders.
 
-## 🚀 Features
 
-### User Features
 
-* **User Authentication**: Secure login and registration system.
-* **Product Catalog**: Browse products with images, descriptions, and prices.
-* **Shopping Cart**: Add, update, or remove products from the cart.
-* **Wishlist**: Save favorite products for future purchase.
-* **Order Management**: View order history and order details.
-* **Responsive UI**: Optimized for both desktop and mobile devices.
 
-### Admin Features
+## ✨ Features
+### 👤 User Features
 
-* **Product Management**: Add, update, or delete products.
-* **Order Management**: View and manage customer orders.
-* **User Management**: Manage customer accounts and permissions.
+* 🔐 Authentication – Register/Login securely.
+
+* 🛒 Shopping Cart – Add, update, and remove items.
+
+* 💖 Wishlist – Save favorite products for later.
+
+* 📦 Order Management – Track order history & details.
+
+* 📱 Responsive UI – Works seamlessly on desktop & mobile.
+
+ ## 🛠️ Admin Features
+
+* 🏬 Product Management – Add, edit, or delete products.
+
+* 📊 Order Management – Manage customer orders.
+
+* 👥 User Management – Manage accounts & permissions.
+
 
 ## 🛠️ Technologies Used
 
@@ -81,7 +91,7 @@ To access the admin dashboard:
 2. **Login**:
 
    Navigate to `http://127.0.0.1:8000/admin/` and log in using the superuser credentials.
-
+   
 
 ## 📄 License
 
