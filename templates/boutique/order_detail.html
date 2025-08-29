@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container">
-    <h2 class="section-title">Order #{{ order.id }} Details</h2>
+    <h2 class="section-title">Order Details</h2>
     <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); max-width: 700px; margin: 0 auto;">
         
         <!-- Flexbox for order info + image -->
@@ -15,9 +15,7 @@
             </div>
 
             <div>
-                <img src="{{ order.items.first.product.image.url }}" 
-                     alt="{{ order.items.first.product.name }}" 
-                     style="max-width: 200px; border-radius: 8px; margin-left: 15px;">
+                <img src="{{ order.items.first.product.image.url }}" alt="{{ order.items.first.product.name }}" style="max-width: 200px; border-radius: 8px; margin-left: 15px;">
             </div>
         </div>
 

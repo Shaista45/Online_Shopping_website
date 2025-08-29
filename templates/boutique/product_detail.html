@@ -264,70 +264,53 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 2000);
     }
 
-    // Handle cart button submission
+    // Generic function to handle form submission via AJAX
+    function handleFormSubmit(form, bodyData = {}) {
+        let url = form.action;
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(bodyData),
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "added") {
+                showNotification(data.message, "success");
+            } else if (data.status === "removed") {
+                showNotification(data.message, "warning");
+            } else {
+                showNotification(data.message, "error");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            showNotification("You are not logged in.", "error");
+        });
+    }
+
+    // Attach AJAX submit handler for cart forms
     document.querySelectorAll(".cart-form").forEach(form => {
         form.addEventListener("submit", function(e) {
-            e.preventDefault(); // Prevent the default form submission
-            let url = this.action; // Get the form action URL
-            let productId = this.dataset.productId; // Get the product ID from data attribute
-
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({}) // Send an empty body for POST
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Data:', data); // Log the parsed data
-                if (data.status === "added") {
-                    showNotification(data.message, "success");
-                } else if (data.status === "removed") {
-                    showNotification(data.message, "warning");
-                } else {
-                    showNotification(data.message, "error");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification("An error occurred. Please try again.", "error");
-            });
+            e.preventDefault();
+            handleFormSubmit(this, { quantity: 1 });
         });
     });
 
-    // Handle wishlist button submission
+    // Attach AJAX submit handler for wishlist forms
     document.querySelectorAll(".wishlist-form").forEach(form => {
         form.addEventListener("submit", function(e) {
-            e.preventDefault(); // Prevent the default form submission
-            let url = this.action; // Get the form action URL
-            let productId = this.dataset.productId; // Get the product ID from data attribute
-
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": "{{ csrf_token }}",
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({}) // Send an empty body for POST
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Data:', data); // Log the parsed data
-                if (data.status === "added") {
-                    showNotification(data.message, "success");
-                } else if (data.status === "removed") {
-                    showNotification(data.message, "warning");
-                } else {
-                    showNotification(data.message, "error");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification("An error occurred. Please try again.", "error");
-            });
+            e.preventDefault();
+            handleFormSubmit(this, {}); // Empty body for wishlist
         });
+    });
+
+    // Optional: Close notification on click
+    document.getElementById("close-success").addEventListener("click", () => {
+        document.getElementById("success-message").style.display = "none";
     });
 });
 </script>

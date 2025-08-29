@@ -1,8 +1,11 @@
 {% extends 'boutique/base.html' %}
 
 {% block content %}
+<div style="margin-top: 20px ; margin-left: 80px;">
+            <a href="{% url 'profile' %}" class="btn">Back to Profile</a>
+        </div>
 <div class="container">
-    <h2 class="section-title" style="border-bottom: 3px solid #8B5C2A; display: inline-block; padding-bottom: 6px;">
+    <h2 class="section-title" style="border-bottom: 3px #8B5C2A; display: inline-block; padding-bottom: 6px;">
         Order History
     </h2>
     {% if orders %}

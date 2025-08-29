@@ -736,8 +736,9 @@
                     <li><a href="{% url 'product_list' %}">Home</a></li>
                     <li><a href="{% url 'product_list' %}?sort=newest">New Arrivals</a></li>
                     {% for category in categories %}
-                    <li><a href="{% url 'product_list' %}?category={{ category.name }}">{{ category.name }}</a></li>
+                    <li><a href="{% url 'product_list' %}?category={{ category.id }}">{{ category.name }}</a></li>
                     {% endfor %}
+
                     <li><a href="{% url 'product_list' %}?on_sale=true">Sale</a></li>
                 </ul>
             </div>
@@ -835,10 +836,12 @@ function showToast(message, type) {
     }, 3000);
 }
 
-// Add to Cart
+// Handle Add to Cart and Add to Wishlist
 document.addEventListener("click", function(e) {
-    if (e.target.classList.contains("add-to-cart")) {
-        let productId = e.target.dataset.id;
+    // Add to Cart
+    if (e.target.classList.contains("add-to-cart") || e.target.closest(".add-to-cart")) {
+        const btn = e.target.closest(".add-to-cart");
+        const productId = btn.dataset.id;
 
         fetch(`/cart/add/${productId}/`, {
             method: "POST",
@@ -852,8 +855,10 @@ document.addEventListener("click", function(e) {
         });
     }
 
-    if (e.target.classList.contains("add-to-wishlist")) {
-        let productId = e.target.dataset.id;
+    // Add to Wishlist
+    if (e.target.classList.contains("add-to-wishlist") || e.target.closest(".add-to-wishlist")) {
+        const btn = e.target.closest(".add-to-wishlist");
+        const productId = btn.dataset.id;
 
         fetch(`/wishlist/add/${productId}/`, {
             method: "POST",
@@ -866,6 +871,94 @@ document.addEventListener("click", function(e) {
             else showToast(data.message, "error");
         });
     }
+});
+
+// Optional: Handle wishlist form submissions on product detail page
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".wishlist-form").forEach(form => {
+        form.addEventListener("submit", function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            fetch(this.action, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "added") showToast(data.message, "success");
+                else if (data.status === "removed") showToast(data.message, "error");
+                else showToast(data.message, "error");
+            })
+            .catch(err => showToast("You are not logged in.", "error"));
+        });
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    document.body.addEventListener("submit", function(e) {
+        const form = e.target;
+        if (form.classList && form.classList.contains("cart-form")) {
+            e.preventDefault();
+            let productId = form.dataset.productId;
+            if (!productId || productId === 'undefined') {
+                if (typeof showNotification === 'function') {
+                    showNotification("Product ID is missing. Please refresh the page and try again.", "error");
+                } else if (typeof showToast === 'function') {
+                    showToast("Product ID is missing. Please refresh the page and try again.", "error");
+                } else {
+                    alert("Product ID is missing. Please refresh the page and try again.");
+                }
+                return;
+            }
+            let url = form.action;
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: 'quantity=1',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (typeof showNotification === 'function') {
+                    if (data.status === "added") {
+                        showNotification(data.message, "success");
+                    } else if (data.status === "removed") {
+                        showNotification(data.message, "warning");
+                    } else {
+                        showNotification(data.message, "error");
+                    }
+                } else if (typeof showToast === 'function') {
+                    if (data.status === "added") {
+                        showToast(data.message, "success");
+                    } else if (data.status === "removed") {
+                        showToast(data.message, "warning");
+                    } else {
+                        showToast(data.message, "error");
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                if (typeof showNotification === 'function') {
+                    showNotification("You are not logged in.", "error");
+                } else if (typeof showToast === 'function') {
+                    showToast("You are not logged in.", "error");
+                } else {
+                    alert("You are not logged in.");
+                }
+            });
+        }
+    });
 });
 </script>
 

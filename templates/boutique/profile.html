@@ -111,7 +111,21 @@
                     <div style="border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                             <div>
-                                <strong>Order #{{ order.id }}</strong>
+                                <strong>
+                                    Product: 
+                                    {% if order.items.all %}
+                                        {% with first_item=order.items.all.0 %}
+                                            {% if first_item.product %}
+                                                {{ first_item.product.name }}
+                                            {% else %}
+                                                (Deleted Product)
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        No products
+                                    {% endif %}
+                                </strong>
+
                                 <span style="display: block; color: #666; font-size: 0.9rem;">{{ order.order_date|date:"M d, Y" }}</span>
                             </div>
                             <div>

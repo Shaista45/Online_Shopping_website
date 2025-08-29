@@ -36,7 +36,8 @@ from .models import Product, Category
 def product_list(request):
     # Get filters from request
     search_query = request.GET.get('search', '')
-    selected_category = request.GET.get('category', '')
+    # selected_category = request.GET.get('category', '')
+    selected_category = request.GET.get('category')
     selected_price = request.GET.get('price', '')
     sort_by = request.GET.get('sort', '')
     on_sale = request.GET.get('on_sale', '')

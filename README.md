@@ -97,5 +97,5 @@ To access the admin dashboard:
 
 This project is licensed under the MIT License 
 
----
+-------
 
